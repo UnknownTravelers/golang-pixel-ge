@@ -3,7 +3,7 @@ package objects
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
-	"github.com/unknownTravelers/3D-jump-infinite/colliders"
+	"github.com/unknownTravelers/golang-pixel-ge/colliders"
 )
 
 type goal struct {
@@ -34,7 +34,7 @@ func (g *goal) Draw(imd *imdraw.IMDraw) {
 	}
 }
 
-func (g *goal) Collide(r pixel.Rect) *colliders.CollisionInfo {
+func (g *goal) Collide(col colliders.Collider) *colliders.CollisionInfo {
 	return nil
 }
 

@@ -5,8 +5,8 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
-	"github.com/unknownTravelers/3D-jump-infinite/colliders"
-	"github.com/unknownTravelers/3D-jump-infinite/controls"
+	"github.com/unknownTravelers/golang-pixel-ge/colliders"
+	"github.com/unknownTravelers/golang-pixel-ge/controls"
 )
 
 type animState int
@@ -37,9 +37,11 @@ type gopherPhys struct {
 	runSpeed  float64
 	jumpSpeed float64
 
-	Rect   pixel.Rect
-	Vel    pixel.Vec
-	ground bool
+	Pos         pixel.Vec
+	Rect        pixel.Rect
+	GroundCheck pixel.Line
+	Vel         pixel.Vec
+	ground      bool
 }
 
 func (gp *gopherPhys) update(dt float64) {
@@ -55,25 +57,33 @@ func (gp *gopherPhys) update(dt float64) {
 
 	// apply gravity and velocity
 	gp.Vel.Y += gp.gravity * dt
-	gp.Rect = gp.Rect.Moved(gp.Vel.Scaled(dt))
+	gp.Pos = gp.Pos.Add(gp.Vel.Scaled(dt))
 
 	// check collisions against each platform
 	gp.ground = false
-	if gp.Vel.Y <= 0 {
+	if gp.Vel.Y <= 0 { // if falling, check ground collision
+		// check if i will collide with ground between now and next frame
+		r := colliders.R(gp.GroundCheck.A.X, gp.GroundCheck.A.Y, gp.GroundCheck.B.X, gp.GroundCheck.B.Y).Grow(0, -gp.Vel.Y*dt, 0, 0).Moved(colliders.Vec(gp.Pos))
 		for _, o := range Game.currentScene.objects {
-			p, ok := o.(*platform) // TODO: needs to be generalized to object (Collide)
-			if !ok {
-				continue
+			// rect from line and line speed estimate
+			if colinfo := o.Collide(r); colinfo != nil {
+				gp.Vel.Y = 0
+				gp.Pos = gp.Pos.Add(pixel.V(0, colinfo.Point.Y-r.Min.Y))
+				gp.ground = true
 			}
-			if gp.Rect.Max.X <= p.Rect.Min.X || gp.Rect.Min.X >= p.Rect.Max.X {
-				continue
-			}
-			if gp.Rect.Min.Y > p.Rect.Max.Y || gp.Rect.Min.Y < p.Rect.Max.Y+gp.Vel.Y*dt {
-				continue
-			}
-			gp.Vel.Y = 0
-			gp.Rect = gp.Rect.Moved(pixel.V(0, p.Rect.Max.Y-gp.Rect.Min.Y))
-			gp.ground = true
+			// p, ok := o.(*platform) // TODO: needs to be generalized to object (Collide)
+			// if !ok {
+			// 	continue
+			// }
+			// if gp.Rect.Max.X <= p.Rect.Min.X || gp.Rect.Min.X >= p.Rect.Max.X {
+			// 	continue
+			// }
+			// if gp.Rect.Min.Y > p.Rect.Max.Y || gp.Rect.Min.Y < p.Rect.Max.Y+gp.Vel.Y*dt {
+			// 	continue
+			// }
+			// gp.Vel.Y = 0
+			// gp.Rect = gp.Rect.Moved(pixel.V(0, p.Rect.Max.Y-gp.Rect.Min.Y))
+			// gp.ground = true
 		}
 	}
 
@@ -81,15 +91,6 @@ func (gp *gopherPhys) update(dt float64) {
 	if gp.ground && controls.Controls.Y > 0 {
 		gp.Vel.Y = gp.jumpSpeed
 	}
-}
-
-func (gp *gopherPhys) collide(col colliders.Collider, dt) *colliders.CollisionInfo {
-	r := colliders.Rect(gp.Rect)
-	rmoved := colliders.Rect(gp.Rect).Grow(0, - gp.Vel.Y*dt, 0, 0)
-	r.Contains(col)
-	rmoved.Contains(col)
-	// TODO: 
-	return nil
 }
 
 func (ga *gopherAnim) Update(dt float64) {
@@ -154,21 +155,21 @@ func (ga *gopherAnim) Draw(imd *imdraw.IMDraw) {
 			ga.Phys.Rect.H()/ga.sprite.Frame().H(),
 		)).
 		ScaledXY(pixel.ZV, pixel.V(-ga.dir, 1)).
-		Moved(ga.Phys.Rect.Center()),
+		Moved(ga.Phys.Pos),
 	)
 }
 
 func (ga *gopherAnim) Collide(col colliders.Collider) *colliders.CollisionInfo {
-	
 	return nil
 }
 
 func NewGopher(sheet pixel.Picture, anims map[string][]pixel.Rect) *gopherAnim {
 	phys := &gopherPhys{
-		gravity:   -512,
-		runSpeed:  64,
-		jumpSpeed: 192,
-		Rect:      colliders.R(-6, -7, 6, 7),
+		gravity:     -512,
+		runSpeed:    64,
+		jumpSpeed:   192,
+		Rect:        pixel.R(-6, -7, 6, 7),
+		GroundCheck: pixel.L(pixel.V(-6, -7), pixel.V(6, -7)),
 	}
 
 	anim := &gopherAnim{

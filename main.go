@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"time"
 
@@ -9,10 +10,16 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/unknownTravelers/3D-jump-infinite/controls"
-	"github.com/unknownTravelers/3D-jump-infinite/loader"
-	"github.com/unknownTravelers/3D-jump-infinite/objects"
+	"github.com/faiface/pixel/text"
+	"github.com/unknownTravelers/golang-pixel-ge/controls"
+	"github.com/unknownTravelers/golang-pixel-ge/loader"
+	"github.com/unknownTravelers/golang-pixel-ge/objects"
 	"golang.org/x/image/colornames"
+)
+
+const (
+	width  = 1024
+	height = 768
 )
 
 func run() {
@@ -23,7 +30,7 @@ func run() {
 
 	cfg := pixelgl.WindowConfig{
 		Title:  "Platformer",
-		Bounds: pixel.R(0, 0, 1024, 768),
+		Bounds: pixel.R(0, 0, width, height),
 		VSync:  true,
 	}
 	win, err := pixelgl.NewWindow(cfg)
@@ -73,7 +80,7 @@ func run() {
 		last = time.Now()
 
 		// lerp the camera position towards the gopher
-		camPos = pixel.Lerp(camPos, goph.Phys.Rect.Center(), 1-math.Pow(1.0/128, dt))
+		camPos = pixel.Lerp(camPos, goph.Phys.Pos, 1-math.Pow(1.0/128, dt))
 		cam := pixel.IM.Moved(camPos.Scaled(-1))
 		canvas.SetMatrix(cam)
 
@@ -109,6 +116,11 @@ func run() {
 			),
 		).Moved(win.Bounds().Center()))
 		canvas.Draw(win, pixel.IM.Moved(canvas.Bounds().Center()))
+		// Debug text
+		debug_info := text.New(pixel.ZV, text.Atlas7x13)
+		debug_info.WriteString(fmt.Sprintf("%v", 1/dt))
+		debug_info.Draw(win, pixel.IM.Scaled(pixel.ZV, 0.55).Moved(canvas.Bounds().Min))
+
 		win.Update()
 	}
 }

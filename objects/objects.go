@@ -2,7 +2,7 @@ package objects
 
 import (
 	"github.com/faiface/pixel/imdraw"
-	"github.com/unknownTravelers/3D-jump-infinite/colliders"
+	"github.com/unknownTravelers/golang-pixel-ge/colliders"
 )
 
 type Object interface {

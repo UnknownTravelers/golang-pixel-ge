@@ -8,8 +8,9 @@ import (
 var errUnownShapeType = errors.New("unknown collider shape")
 
 type CollisionInfo struct {
-	Point  vec
-	Normal vec
+	Point   vec
+	Normal  vec
+	Overlap Collider
 }
 
 type Collider interface {

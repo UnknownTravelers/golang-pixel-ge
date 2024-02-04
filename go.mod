@@ -1,4 +1,4 @@
-module github.com/unknownTravelers/3D-jump-infinite
+module github.com/unknownTravelers/golang-pixel-ge
 
 go 1.21.6
 

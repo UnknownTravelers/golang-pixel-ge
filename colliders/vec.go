@@ -92,3 +92,7 @@ func (v vec) Normal() vec {
 func V(x, y float64) vec {
 	return vec(pixel.V(x, y))
 }
+
+func Vec(v pixel.Vec) vec {
+	return vec(v)
+}

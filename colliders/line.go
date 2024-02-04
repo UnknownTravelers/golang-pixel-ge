@@ -138,6 +138,17 @@ func (l line) Closest(v vec) vec {
 	return vec(pixel.Line(l).Closest(pixel.Vec(v)))
 }
 
+func (l line) Moved(v vec) line {
+	return line{
+		A: l.A.Add(pixel.Vec(v)),
+		B: l.B.Add(pixel.Vec(v)),
+	}
+}
+
 func L(from, to pixel.Vec) line {
 	return line(pixel.L(from, to))
+}
+
+func Line(l pixel.Line) line {
+	return line(l)
 }

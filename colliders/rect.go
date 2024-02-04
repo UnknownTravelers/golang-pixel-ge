@@ -30,13 +30,14 @@ func (r rect) Contains(col Collider) *CollisionInfo {
 }
 
 func (r1 rect) Rect(r2 rect) *CollisionInfo {
-	rect := pixel.Rect(r1).Intersect(pixel.Rect(r2))
-	if rect == pixel.ZR {
+	r := pixel.Rect(r1).Intersect(pixel.Rect(r2))
+	if r == pixel.ZR {
 		return nil
 	}
 	return &CollisionInfo{
-		Point:  vec(rect.Min),
-		Normal: r1.Center().To(r2.Center()).Normalized(),
+		Point:   vec(r.Min),
+		Normal:  r1.Center().To(r2.Center()).Normalized(),
+		Overlap: rect(r),
 	}
 }
 
@@ -139,10 +140,18 @@ func (r rect) Center() vec {
 }
 
 func (r rect) Grow(left, bottom, right, top float64) rect {
-	r.Min.X += left
-	r.Min.Y += bottom
+	r.Min.X -= left
+	r.Min.Y -= bottom
 	r.Max.X += right
 	r.Max.Y += top
+	return r
+}
+
+func (r rect) Moved(v vec) rect {
+	r.Min.X += v.X
+	r.Min.Y += v.Y
+	r.Max.X += v.X
+	r.Max.Y += v.Y
 	return r
 }
 
